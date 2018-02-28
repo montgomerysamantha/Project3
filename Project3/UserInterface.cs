@@ -24,35 +24,42 @@ namespace Project3
         {
             if (uxOpenFile.ShowDialog() == DialogResult.OK)
             {
-                //read in the file and put it into the listbox
-                WeatherList temp = new WeatherList();
-                char[] delims = { ' ' };
-                using (StreamReader sr = new StreamReader(uxOpenFile.FileName))
+                try //try to read the input file
                 {
-                    while (!sr.EndOfStream)
+                    //read in the file and put it into the listbox
+                    WeatherList temp = new WeatherList();
+                    char[] delims = { ' ' };
+                    using (StreamReader sr = new StreamReader(uxOpenFile.FileName))
                     {
-                        string[] pieces = (sr.ReadLine()).Split(delims, StringSplitOptions.RemoveEmptyEntries);
-                        int year = Convert.ToInt32(pieces[2]);
-                        int month = Convert.ToInt32(pieces[0]);
-                        int day = Convert.ToInt32(pieces[1]);
-                        double temperature = Convert.ToDouble(pieces[3]);
-                        DateTime date = new DateTime(year, month, day);
-                        WeatherData weather = new WeatherData(date, temperature);
-                        temp.Add(weather);
+                        while (!sr.EndOfStream)
+                        {
+                            string[] pieces = (sr.ReadLine()).Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                            int year = Convert.ToInt32(pieces[2]);
+                            int month = Convert.ToInt32(pieces[0]);
+                            int day = Convert.ToInt32(pieces[1]);
+                            double temperature = Convert.ToDouble(pieces[3]);
+                            DateTime date = new DateTime(year, month, day);
+                            WeatherData weather = new WeatherData(date, temperature);
+                            temp.Add(weather);
+                        }
                     }
+
+                    _current = temp;
+                    uxWeatherListBox.DataSource = _current;
                 }
-
-                _current = temp;
-                uxWeatherListBox.DataSource = _current;
-
-                DateTime d = new DateTime(1996, 5, 16);
-                DateTime da = new DateTime(1997, 5, 16);
-                //_current.FilterRange(d, da);
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
 
         private void FilterClick(object sender, EventArgs e)
         {
+            WeatherList copy = new WeatherList(_current);
+            wlists.Push(copy); //pushing the copy onto the stack;
+
+            uxUndoButton.Enabled = true; //we can now undo changes, so make button avaliable
             if (uxDateRangeButton.Checked)
             {               
                 _current.FilterRange(uxMonthCalendar.SelectionStart, uxMonthCalendar.SelectionEnd);
@@ -74,12 +81,10 @@ namespace Project3
                 MessageBox.Show("Error: Please select a filter first!");
                 return;
             }
-            WeatherList copy = new WeatherList(_current);
-            wlists.Push(copy); //pushing the copy onto the stack;
+
             uxWeatherListBox.DataSource = null;
             uxWeatherListBox.DataSource = _current;
 
-            uxUndoButton.Enabled = true; //we can now undo changes, so make button avaliable
         }
 
         private void UndoClick(object sender, EventArgs e)

@@ -122,7 +122,7 @@ namespace Project3
                 _head = _head.Next;
             }
             Node<WeatherData> temp = _head;
-            while (temp.Next.Data.Date.CompareTo(end) <= 0)
+            while (temp.Next.Data.Date.CompareTo(end) < 0)
             {                
                temp = temp.Next;
             }
